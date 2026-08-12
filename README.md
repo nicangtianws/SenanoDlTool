@@ -1,11 +1,7 @@
 # README
 
 ## About
-
-This is the official Wails React template.
-
-You can configure the project by editing `wails.json`. More information about the project settings can be found
-here: https://wails.io/docs/reference/project-config
+使用wails(react+go)开发的下载器，支持多线程下载、多任务下载、断点续传。
 
 ## Live Development
 
