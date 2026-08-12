@@ -1,0 +1,39 @@
+{
+   "version": "2.0.0",
+   "tasks": [
+       {
+           "label": "ui:install",
+           "type": "shell",
+           "options": {
+               "cwd": "${workspaceFolder}/frontend"
+           },
+           "command": "pnpm",
+           "args": ["install"]
+       },
+       {
+           "label": "ui:build",
+           "type": "shell",
+           "options": {
+               "cwd": "${workspaceFolder}/frontend"
+           },
+           "command": "pnpm",
+           "args": ["build"]
+       },
+       {
+           "label": "build",
+           "type": "shell",
+           "options": {
+               "cwd": "${workspaceFolder}"
+           },
+           "command": "go",
+           "args": [
+               "build",
+               "-tags", "dev webkit2_41",
+              //  "-tags", "",
+              //  "-gcflags", "all=-N -l",
+               "-o", "build/bin/layout-demo-dev-linux-amd64"
+           ],
+           "dependsOn": ["ui:install", "ui:build"]
+       }
+   ]
+}
