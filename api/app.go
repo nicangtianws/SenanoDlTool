@@ -31,7 +31,7 @@ func NewApp() *App {
 func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
 	home, _ := homedir.Dir()
-	dir := path.Join(home, "Document", "SenanoDlTool")
+	dir := path.Join(home, "Documents", "SenanoDlTool")
 	fmt.Printf("document path: %s", dir)
 	model.InitDatabase(&dir)
 	// 启动时将未完成的下载变更为暂停状态
