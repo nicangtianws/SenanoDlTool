@@ -38,20 +38,15 @@ function App() {
         error(res.message)
         return
       }
-      let newSettings = settings
+      // 更新设置值
       const data = res.data
       if (data && data.length > 0) {
-        // 更新设置值
-        newSettings = settings.map((setting) => {
-          const d = data.find(
-            (item) => item.settingsKey === setting.settingsKey,
-          )
-          return {
-            ...setting,
-            settingsValue: d.settingsValue || setting.settingsValue,
-          }
+        const newSettings = {...settings}
+        data.forEach((item) => {
+          settings[item.settingsKey].value = item.settingsValue
         })
         setSettings(newSettings)
+        console.log('load settings', newSettings)
       }
     })
   }, [])

@@ -10,12 +10,12 @@ import { atom } from 'jotai'
 import { MessageProvider, messageStyles } from './hooks/UseMessage'
 
 // 设置 全局状态
-export const settingsAtom = atom([
-  {
-    settingsLabel: 'Theme',
-    settingsKey: 'theme',
-    settingsType: 'SELECT',
-    settingsValue: 'LIGHT',
+export const settingsAtom = atom({
+  theme: {
+    label: 'Theme',
+    key: 'theme',
+    type: 'SELECT',
+    value: 'LIGHT',
     options: [
       {
         label: 'LIGHT',
@@ -27,21 +27,21 @@ export const settingsAtom = atom([
       },
     ],
   },
-  {
-    settingsLabel: 'Save Dir',
-    settingsKey: 'saveDir',
-    settingsValue: '',
-    settingsType: 'DIRECTORY_SELECTOR',
+  saveDir: {
+    label: 'Save Dir',
+    key: 'saveDir',
+    value: '',
+    type: 'DIRECTORY_SELECTOR',
     options: [],
   },
-  {
-    settingsLabel: 'Thread Number',
-    settingsKey: 'threadNumber',
-    settingsValue: 4,
-    settingsType: 'INPUT_NUMBER',
+  threadNumber:   {
+    label: 'Thread Number',
+    key: 'threadNumber',
+    value: 4,
+    type: 'INPUT_NUMBER',
     options: [],
   },
-])
+})
 
 export const statusAtom = atom({})
 export const progressAtom = atom({})

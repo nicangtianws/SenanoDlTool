@@ -25,6 +25,7 @@ export const SettingsPage = () => {
   const { success, error, warning, info, addMessage } = useMessage()
   const [settings, setSettings] = useAtom(settingsAtom)
   const [refresh, setRefresh] = useState(false)
+  const [proxyType, setProxyType] = useState(0)
 
   const {
     register,
@@ -65,24 +66,19 @@ export const SettingsPage = () => {
         error(res.message)
         return
       }
-      let newSettings = settings
+      // 更新设置值
       const data = res.data
       if (data && data.length > 0) {
-        // 更新设置值
-        newSettings = settings.map((setting) => {
-          const d = data.find(
-            (item) => item.settingsKey === setting.settingsKey,
-          )
-          return {
-            ...setting,
-            settingsValue: d.settingsValue || setting.settingsValue,
-          }
+        const newSettings = {...settings}
+        data.forEach((item) => {
+          settings[item.settingsKey].value = item.settingsValue
         })
         setSettings(newSettings)
+        Object.keys(newSettings).forEach((key) => {
+          const setting = newSettings[key]
+          setValue(setting.key, setting.value)
+        })
       }
-      newSettings.forEach((setting) => {
-        setValue(setting.settingsKey, setting.settingsValue)
-      })
     })
   }, [refresh])
 
@@ -90,16 +86,14 @@ export const SettingsPage = () => {
     console.log('settings form data: ', data)
     console.log('settings: ', settings)
     const params = []
-    const newSettings = settings.map((setting) => {
-      const key = Object.keys(data).find((item) => item === setting.settingsKey)
+    const newSettings = {...settings} 
+    // 更新设置值
+    Object.keys(data).forEach((key) => {
+      newSettings[key].value = data[key]
       params.push({
         settingsKey: key,
         settingsValue: data[key] + '',
       })
-      return {
-        ...setting,
-        settingsValue: data[key],
-      }
     })
     console.log('settings new: ', newSettings)
     SettingUpdate(JSON.stringify(params)).then((response) => {
@@ -113,11 +107,12 @@ export const SettingsPage = () => {
     })
   }
 
-  const settingsItems = settings.map((setting) => {
-    if (setting.settingsType === 'DIRECTORY_SELECTOR') {
+  const settingsItems = Object.keys(settings).map((key) => {
+    const setting = settings[key]
+    if (setting.type === 'DIRECTORY_SELECTOR') {
       setting.action = handleFolderSelect
     }
-    if (setting.settingsType === 'SELECT') {
+    if (setting.type === 'SELECT') {
       const options = setting.options.map((item) => (
         <option key={item.value} value={item.value}>
           {item.label}
@@ -125,13 +120,13 @@ export const SettingsPage = () => {
       ))
       return (
         <Form.Group
-          key={setting.settingsKey}
+          key={setting.key}
           as={Row}
           className="mb-3"
-          controlId={setting.settingsKey}
+          controlId={setting.key}
         >
           <Form.Label column md="2">
-            {setting.settingsLabel}
+            {setting.label}
           </Form.Label>
           <Col md="4">
             <Form.Select
@@ -141,23 +136,23 @@ export const SettingsPage = () => {
                   handleSubmit(onSubmit)()
                 },
               })}
-              aria-label={setting.settingsLabel}
+              aria-label={setting.label}
             >
               {options}
             </Form.Select>
           </Col>
         </Form.Group>
       )
-    } else if (setting.settingsType === 'DIRECTORY_SELECTOR') {
+    } else if (setting.type === 'DIRECTORY_SELECTOR') {
       return (
         <Form.Group
-          key={setting.settingsKey}
+          key={setting.key}
           as={Row}
           className="mb-3"
-          controlId={setting.settingsKey}
+          controlId={setting.key}
         >
           <Form.Label column md="2">
-            {setting.settingsLabel}
+            {setting.label}
           </Form.Label>
           <Col md="8">
             <Form.Control
@@ -175,16 +170,16 @@ export const SettingsPage = () => {
           </Col>
         </Form.Group>
       )
-    } else if (setting.settingsType === 'INPUT_NUMBER') {
+    } else if (setting.type === 'INPUT_NUMBER') {
       return (
         <Form.Group
-          key={setting.settingsKey}
+          key={setting.key}
           as={Row}
           className="mb-3"
-          controlId={setting.settingsKey}
+          controlId={setting.key}
         >
           <Form.Label column md="2">
-            {setting.settingsLabel}
+            {setting.label}
           </Form.Label>
           <Col md="4">
             <FormControl
@@ -217,6 +212,22 @@ export const SettingsPage = () => {
     }
   })
 
+  let proxyInputBox = (<div></div>)
+  if (proxyType === 2) {
+    proxyInputBox = (
+      <div>
+        <Form.Group className="mb-3" controlId={'proxyAddress'}>
+          <Form.Label>Proxy address</Form.Label>
+          <Form.Control type="text" placeholder="Please input proxy adress" />
+        </Form.Group>
+      </div>
+    )
+  }
+
+  const handleProxyTypeChange = (e) => {
+    setProxyType(e.target.value)
+  }
+
   return (
     <div id="settings">
       <Container fluid>
@@ -243,6 +254,45 @@ export const SettingsPage = () => {
           <Col md={12}>
             <Form id="form" onSubmit={handleSubmit(onSubmit)}>
               {settingsItems}
+              <Form.Group
+                key='proxy'
+                as={Row}
+                className="mb-3"
+                controlId="proxy"
+              >
+                <Form.Label column md="2">
+                  Proxy
+                </Form.Label>
+                <Col md="8">
+                  <div className="mb-3">
+                    <Form.Check
+                      inline
+                      label="No proxy"
+                      name="proxyType"
+                      type='radio'
+                      value={0}
+                      onChange={handleProxyTypeChange}
+                    />
+                    <Form.Check
+                      inline
+                      label="Fallow system"
+                      name="proxyType"
+                      type='radio'
+                      value={1}
+                      onChange={handleProxyTypeChange}
+                    />
+                    <Form.Check
+                      inline
+                      label="Custom"
+                      name="proxyType"
+                      type='radio'
+                      value={2}
+                      onChange={handleProxyTypeChange}
+                    />
+                  </div>
+                  {proxyInputBox}
+                </Col>
+              </Form.Group>
             </Form>
           </Col>
         </Row>
