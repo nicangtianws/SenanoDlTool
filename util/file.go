@@ -15,7 +15,7 @@ func GetDownloadDir() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	dir = path.Join(dir, "Download")
+	dir = path.Join(dir, "Downloads")
 	if !FileExists(dir) {
 		err = os.Mkdir(dir, 0755)
 		if err != nil {
