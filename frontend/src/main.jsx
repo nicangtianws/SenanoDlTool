@@ -74,6 +74,14 @@ export const settingsAtom = atom({
     defaultValue: '127.0.0.1:10808',
     options: [],
   },
+  userAgent: {
+    label: 'User Agent',
+    key: 'userAgent',
+    value: '',
+    type: 'INPUT_TEXT',
+    placeholder: 'Please input user agent!',
+    options: [],
+  },
 })
 
 export const statusAtom = atom({})

@@ -59,7 +59,7 @@ export const SettingsPage = () => {
 
   useEffect(() => {
     LoadSettings().then((response) => {
-      // console.log('settings string: ', response)
+      console.log('settings string: ', response)
       const res = JSON.parse(response)
       if (res.code != 200) {
         error(res.message)
@@ -67,28 +67,30 @@ export const SettingsPage = () => {
       }
       // 更新设置值
       const data = res.data
+      let showSettings = settings
       if (data && data.length > 0) {
         const newSettings = { ...settings }
         data.forEach((item) => {
           settings[item.settingsKey].value = item.settingsValue
         })
         setSettings(newSettings)
-        Object.keys(newSettings).forEach((key) => {
-          const setting = newSettings[key]
-          if (setting.value) {
-            setValue(setting.key, setting.value)
-          } else {
-            setValue(setting.key, setting.defaultValue)
-          }
-        })
+        showSettings = newSettings
       }
+      Object.keys(showSettings).forEach((key) => {
+        const setting = showSettings[key]
+        if (setting.value) {
+          setValue(setting.key, setting.value)
+        } else if (setting.key !== 'proxyAddress' || showSettings.proxyType.value === 'CUSTOM') {
+          setValue(setting.key, setting.defaultValue || '')
+        }
+      })
     })
   }, [refresh])
 
   // 提交
   const onSubmit = async (data) => {
-    // console.log('settings form data: ', data)
-    // console.log('settings: ', settings)
+    console.log('settings form data: ', data)
+    console.log('settings: ', settings)
     const params = []
     const newSettings = { ...settings }
     // 更新设置值
@@ -100,11 +102,11 @@ export const SettingsPage = () => {
       })
     })
     // 处理代理
-    if (newSettings.proxyType.value !== 'CUSTOM') {
+    if (data.proxyType !== 'CUSTOM') {
       newSettings.proxyAddress.value = ''
       params.proxyAddress = ''
     }
-    // console.log('settings new: ', newSettings)
+    console.log('settings new: ', newSettings)
     SettingUpdate(JSON.stringify(params)).then((response) => {
       const res = JSON.parse(response)
       if (res.code != 200) {
@@ -245,36 +247,34 @@ export const SettingsPage = () => {
       )
     } else if (setting.type === 'INPUT_TEXT') {
       const key = setting.key
-      if (key !== 'proxyAddress' || settings.proxyType.value === 'CUSTOM') {
-        return (
-          <Form.Group key={key} as={Row} className="mb-3" controlId={key}>
-            <Form.Label column md="2">
-              {setting.label}
-            </Form.Label>
-            <Col md="8">
-              <Form.Control
-                {...register(key, {
-                  ...setting.rules,
-                  onBlur: () => {
-                    trigger(key)
-                    handleSubmit(onSubmit)()
-                  },
-                })}
-                type="text"
-                placeholder={setting.placeholder}
-                isInvalid={!!errors[key]}
-              />
-              {errors[key] && (
-                <Form.Control.Feedback type="invalid">
-                  {errors[key].message}
-                </Form.Control.Feedback>
-              )}
-            </Col>
-          </Form.Group>
-        )
-      } else {
-        return <div></div>
-      }
+      const disabled = settings.proxyType.value !== 'CUSTOM' && setting.key == 'proxyAddress'
+      return (
+        <Form.Group key={key} as={Row} className="mb-3" controlId={key}>
+          <Form.Label column md="2">
+            {setting.label}
+          </Form.Label>
+          <Col md="8">
+            <Form.Control
+              {...register(key, {
+                ...setting.rules,
+                onBlur: () => {
+                  trigger(key)
+                  handleSubmit(onSubmit)()
+                },
+              })}
+              type="text"
+              placeholder={setting.placeholder}
+              isInvalid={!!errors[key]}
+              disabled={disabled}
+            />
+            {errors[key] && (
+              <Form.Control.Feedback type="invalid">
+                {errors[key].message}
+              </Form.Control.Feedback>
+            )}
+          </Col>
+        </Form.Group>
+      )
     }
   })
 

@@ -139,7 +139,10 @@ func DownloadFileByParts(task *DownloadTask) {
 	dlFile = task.DlFile
 
 	dlUrl := dlFile.Url
-	ua := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"
+	ua := SettingValue("userAgent")
+	if strings.TrimSpace(ua) == "" {
+		ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"
+	}
 	// 多线程控制参数
 	sem := make(chan struct{}, 4) // 并发控制，空结构类型不占用空间
 	totalCount := dlFile.PartNum  // 统计总数

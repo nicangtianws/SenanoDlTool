@@ -54,7 +54,7 @@ func (a *App) Shutdown(ctx context.Context) {
 func (a *App) openDirectoryDialog() {
 	var err error
 	downloadDir := model.SettingValue("saveDir")
-	if strings.TrimSpace(downloadDir) == "" {
+	if strings.TrimSpace(downloadDir) == "" || !util.FileExists(downloadDir) {
 		downloadDir, err = util.GetDownloadDir()
 		if err != nil {
 			downloadDir, err = os.UserHomeDir()
