@@ -59,7 +59,7 @@ export const SettingsPage = () => {
 
   useEffect(() => {
     LoadSettings().then((response) => {
-      console.log('settings string: ', response)
+      // console.log('settings string: ', response)
       const res = JSON.parse(response)
       if (res.code != 200) {
         error(res.message)
@@ -89,8 +89,8 @@ export const SettingsPage = () => {
 
   // 提交
   const onSubmit = async (data) => {
-    console.log('settings form data: ', data)
-    console.log('settings: ', settings)
+    // console.log('settings form data: ', data)
+    // console.log('settings: ', settings)
     const params = []
     const newSettings = { ...settings }
     // 更新设置值
@@ -106,7 +106,7 @@ export const SettingsPage = () => {
       newSettings.proxyAddress.value = ''
       params.proxyAddress = ''
     }
-    console.log('settings new: ', newSettings)
+    // console.log('settings new: ', newSettings)
     SettingUpdate(JSON.stringify(params)).then((response) => {
       const res = JSON.parse(response)
       if (res.code != 200) {
