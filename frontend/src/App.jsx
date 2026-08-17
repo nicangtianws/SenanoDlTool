@@ -46,7 +46,7 @@ function App() {
           settings[item.settingsKey].value = item.settingsValue
         })
         setSettings(newSettings)
-        console.log('load settings', newSettings)
+        // console.log('load settings', newSettings)
       }
     })
   }, [])

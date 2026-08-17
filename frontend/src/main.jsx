@@ -34,11 +34,44 @@ export const settingsAtom = atom({
     type: 'DIRECTORY_SELECTOR',
     options: [],
   },
-  threadNumber:   {
+  threadNumber: {
     label: 'Thread Number',
     key: 'threadNumber',
     value: 4,
     type: 'INPUT_NUMBER',
+    options: [],
+  },
+  proxyType: {
+    label: 'Proxy Type',
+    key: 'proxyType',
+    value: 'NO_PROXY',
+    type: 'INPUT_RADIO',
+    options: [
+      {
+        label: 'No Proxy',
+        value: 'NO_PROXY',
+      },
+      {
+        label: 'Follow System',
+        value: 'FOLLOW_SYSTEM',
+      },
+      {
+        label: 'Custom',
+        value: 'CUSTOM',
+      },
+    ],
+  },
+  proxyAddress: {
+    label: 'Proxy Address',
+    key: 'proxyAddress',
+    value: '',
+    type: 'INPUT_TEXT',
+    placeholder: 'Please input proxy address!',
+    rules: {
+      minLength: { value: 9, message: 'Too short!' },
+      maxLength: { value: 21, message: 'Too long!' },
+    },
+    defaultValue: '127.0.0.1:10808',
     options: [],
   },
 })

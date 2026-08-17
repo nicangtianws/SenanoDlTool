@@ -6,7 +6,10 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
+	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 
@@ -135,7 +138,7 @@ func DownloadFileByParts(task *DownloadTask) {
 	log.Printf("Download completed: %d%%", progress*100/dlFile.PartNum)
 	dlFile = task.DlFile
 
-	url := dlFile.Url
+	dlUrl := dlFile.Url
 	ua := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"
 	// 多线程控制参数
 	sem := make(chan struct{}, 4) // 并发控制，空结构类型不占用空间
@@ -176,7 +179,7 @@ func DownloadFileByParts(task *DownloadTask) {
 				return
 			default:
 				// 下载分块文件
-				err := downloadPartFile(file, url, ua, p.PartNum, p.StartByte, p.EndByte, taskCtx)
+				err := downloadPartFile(file, dlUrl, ua, p.PartNum, p.StartByte, p.EndByte, taskCtx)
 				if err != nil {
 					// 下载失败
 					cancel() // 取消其他协程
@@ -247,21 +250,67 @@ func DownloadFileByParts(task *DownloadTask) {
 	}
 }
 
+func generateClient(proxyType int, proxyAddress string) (*http.Client, error) {
+	var client *http.Client
+	var err error
+	// 使用系统代理
+	switch proxyType {
+	case 1:
+		client = &http.Client{
+			Transport: &http.Transport{
+				Proxy: http.ProxyFromEnvironment,
+			},
+		}
+	case 2:
+		// 自定义代理地址
+		if strings.TrimSpace(proxyAddress) != "" {
+			// 创建代理
+			proxy, err := url.Parse(proxyAddress)
+			if err != nil {
+				log.Printf("错误的代理地址: %s", proxyAddress)
+				return nil, err
+			}
+			client = &http.Client{
+				Transport: &http.Transport{
+					Proxy: http.ProxyURL(proxy),
+				},
+			}
+		} else {
+			return nil, fmt.Errorf("错误的代理地址: %s", proxyAddress)
+		}
+	default:
+		// 使用默认请求客户端
+		client = http.DefaultClient
+	}
+
+	return client, err
+}
+
 // 下载文件块
-func downloadPartFile(file *os.File, url, ua string, partNum int, start, end int64, ctx context.Context) error {
+func downloadPartFile(file *os.File, dlUrl, ua string, partNum int, start, end int64, ctx context.Context) error {
+	// 初始化客户端
+	var client *http.Client
+	proxyType := SettingValue("proxyType")
+	intProxyType, err := strconv.Atoi(proxyType)
+	if err != nil {
+		intProxyType = 0
+	}
+	proxyAddress := SettingValue("proxyAddress")
+	client, err = generateClient(intProxyType, proxyAddress)
+
 	// 创建请求
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", dlUrl, nil)
 	if err != nil {
 		return err
 	}
 	// 设置下载部分文件
 	req.Header.Set("Range", fmt.Sprintf("bytes=%v-%v", start, end))
-	if len(ua) > 0 {
+	if strings.TrimSpace(ua) != "" {
 		req.Header.Set("User-Agent", ua)
 	}
 
 	// 执行请求
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}

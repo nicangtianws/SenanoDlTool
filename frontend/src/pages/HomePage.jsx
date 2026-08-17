@@ -301,7 +301,7 @@ function HomePage() {
       }
       return (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 30px' }}>
-          <ProgressBar animated now={progress} />
+          <ProgressBar animated now={progress} label={`${progress}%`}/>
           <OptIconSpan>
             <StopFill
               onClick={() => {

@@ -25,7 +25,6 @@ export const SettingsPage = () => {
   const { success, error, warning, info, addMessage } = useMessage()
   const [settings, setSettings] = useAtom(settingsAtom)
   const [refresh, setRefresh] = useState(false)
-  const [proxyType, setProxyType] = useState(0)
 
   const {
     register,
@@ -69,24 +68,29 @@ export const SettingsPage = () => {
       // 更新设置值
       const data = res.data
       if (data && data.length > 0) {
-        const newSettings = {...settings}
+        const newSettings = { ...settings }
         data.forEach((item) => {
           settings[item.settingsKey].value = item.settingsValue
         })
         setSettings(newSettings)
         Object.keys(newSettings).forEach((key) => {
           const setting = newSettings[key]
-          setValue(setting.key, setting.value)
+          if (setting.value) {
+            setValue(setting.key, setting.value)
+          } else {
+            setValue(setting.key, setting.defaultValue)
+          }
         })
       }
     })
   }, [refresh])
 
+  // 提交
   const onSubmit = async (data) => {
-    console.log('settings form data: ', data)
-    console.log('settings: ', settings)
+    // console.log('settings form data: ', data)
+    // console.log('settings: ', settings)
     const params = []
-    const newSettings = {...settings} 
+    const newSettings = { ...settings }
     // 更新设置值
     Object.keys(data).forEach((key) => {
       newSettings[key].value = data[key]
@@ -95,7 +99,12 @@ export const SettingsPage = () => {
         settingsValue: data[key] + '',
       })
     })
-    console.log('settings new: ', newSettings)
+    // 处理代理
+    if (newSettings.proxyType.value !== 'CUSTOM') {
+      newSettings.proxyAddress.value = ''
+      params.proxyAddress = ''
+    }
+    // console.log('settings new: ', newSettings)
     SettingUpdate(JSON.stringify(params)).then((response) => {
       const res = JSON.parse(response)
       if (res.code != 200) {
@@ -103,7 +112,7 @@ export const SettingsPage = () => {
         return
       }
       setSettings(newSettings)
-      console.log('save settings success')
+      // console.log('save settings success')
     })
   }
 
@@ -171,62 +180,103 @@ export const SettingsPage = () => {
         </Form.Group>
       )
     } else if (setting.type === 'INPUT_NUMBER') {
+      const key = setting.key
       return (
-        <Form.Group
-          key={setting.key}
-          as={Row}
-          className="mb-3"
-          controlId={setting.key}
-        >
+        <Form.Group key={key} as={Row} className="mb-3" controlId={key}>
           <Form.Label column md="2">
             {setting.label}
           </Form.Label>
           <Col md="4">
             <FormControl
               type="number"
-              name="threadNumber"
-              {...register('threadNumber', {
+              name={key}
+              {...register(key, {
                 valueAsNumber: true,
-                min: { value: 1, message: '无效线程数' },
-                max: { value: 128, message: '最大128个线程' },
+                min: { value: 1, message: 'Invalid!' },
+                max: { value: 128, message: '128 max!' },
                 onBlur: (e) => {
-                  trigger('threadNumber')
+                  trigger(key)
                   if (e.target.value < 1) {
-                    setValue('threadNumber', 1)
+                    setValue(key, 1)
                   } else if (e.target.value > 128) {
-                    setValue('threadNumber', 128)
+                    setValue(key, 128)
                   }
                   handleSubmit(onSubmit)()
                 },
               })}
-              isInvalid={!!errors.threadNumber}
+              isInvalid={!!errors[key]}
             />
-            {errors.threadNumber && (
+            {errors[key] && (
               <Form.Control.Feedback type="invalid">
-                {errors.threadNumber.message}
+                {errors[key].message}
               </Form.Control.Feedback>
             )}
           </Col>
         </Form.Group>
       )
+    } else if (setting.type === 'INPUT_RADIO') {
+      const key = setting.key
+      const radios = setting.options.map((item) => {
+        return (
+          <Form.Check
+            key={item.value}
+            {...register(key, {
+              onChange: () => {
+                handleSubmit(onSubmit)()
+              },
+            })}
+            inline
+            label={item.label}
+            name={key}
+            type="radio"
+            value={item.value}
+          />
+        )
+      })
+      return (
+        <Form.Group key={key} as={Row} className="mb-3" controlId={key}>
+          <Form.Label column md="2">
+            {setting.label}
+          </Form.Label>
+          <Col md="8">
+            <div className="mb-3">{radios}</div>
+          </Col>
+        </Form.Group>
+      )
+    } else if (setting.type === 'INPUT_TEXT') {
+      const key = setting.key
+      if (key !== 'proxyAddress' || settings.proxyType.value === 'CUSTOM') {
+        return (
+          <Form.Group key={key} as={Row} className="mb-3" controlId={key}>
+            <Form.Label column md="2">
+              {setting.label}
+            </Form.Label>
+            <Col md="8">
+              <Form.Control
+                {...register(key, {
+                  ...setting.rules,
+                  onBlur: () => {
+                    trigger(key)
+                    handleSubmit(onSubmit)()
+                  },
+                })}
+                type="text"
+                placeholder={setting.placeholder}
+                isInvalid={!!errors[key]}
+              />
+              {errors[key] && (
+                <Form.Control.Feedback type="invalid">
+                  {errors[key].message}
+                </Form.Control.Feedback>
+              )}
+            </Col>
+          </Form.Group>
+        )
+      } else {
+        return <div></div>
+      }
     }
   })
-
-  let proxyInputBox = (<div></div>)
-  if (proxyType === 2) {
-    proxyInputBox = (
-      <div>
-        <Form.Group className="mb-3" controlId={'proxyAddress'}>
-          <Form.Label>Proxy address</Form.Label>
-          <Form.Control type="text" placeholder="Please input proxy adress" />
-        </Form.Group>
-      </div>
-    )
-  }
-
-  const handleProxyTypeChange = (e) => {
-    setProxyType(e.target.value)
-  }
 
   return (
     <div id="settings">
@@ -254,45 +304,6 @@ export const SettingsPage = () => {
           <Col md={12}>
             <Form id="form" onSubmit={handleSubmit(onSubmit)}>
               {settingsItems}
-              <Form.Group
-                key='proxy'
-                as={Row}
-                className="mb-3"
-                controlId="proxy"
-              >
-                <Form.Label column md="2">
-                  Proxy
-                </Form.Label>
-                <Col md="8">
-                  <div className="mb-3">
-                    <Form.Check
-                      inline
-                      label="No proxy"
-                      name="proxyType"
-                      type='radio'
-                      value={0}
-                      onChange={handleProxyTypeChange}
-                    />
-                    <Form.Check
-                      inline
-                      label="Fallow system"
-                      name="proxyType"
-                      type='radio'
-                      value={1}
-                      onChange={handleProxyTypeChange}
-                    />
-                    <Form.Check
-                      inline
-                      label="Custom"
-                      name="proxyType"
-                      type='radio'
-                      value={2}
-                      onChange={handleProxyTypeChange}
-                    />
-                  </div>
-                  {proxyInputBox}
-                </Col>
-              </Form.Group>
             </Form>
           </Col>
         </Row>
