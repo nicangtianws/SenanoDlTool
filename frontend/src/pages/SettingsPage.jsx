@@ -80,7 +80,10 @@ export const SettingsPage = () => {
         const setting = showSettings[key]
         if (setting.value) {
           setValue(setting.key, setting.value)
-        } else if (setting.key !== 'proxyAddress' || showSettings.proxyType.value === 'CUSTOM') {
+        } else if (
+          setting.key !== 'proxyAddress' ||
+          showSettings.proxyType.value === 'CUSTOM'
+        ) {
           setValue(setting.key, setting.defaultValue || '')
         }
       })
@@ -95,17 +98,21 @@ export const SettingsPage = () => {
     const newSettings = { ...settings }
     // 更新设置值
     Object.keys(data).forEach((key) => {
-      newSettings[key].value = data[key]
-      params.push({
-        settingsKey: key,
-        settingsValue: data[key] + '',
-      })
+      // 当未选择自定义代理时清空代理地址
+      if (key === 'proxyAddress' && data.proxyType !== 'CUSTOM') {
+        newSettings.proxyAddress.value = ''
+        params.push({
+          settingsKey: key,
+          settingsValue: '',
+        })
+      } else {
+        newSettings[key].value = data[key]
+        params.push({
+          settingsKey: key,
+          settingsValue: data[key] + '',
+        })
+      }
     })
-    // 处理代理
-    if (data.proxyType !== 'CUSTOM') {
-      newSettings.proxyAddress.value = ''
-      params.proxyAddress = ''
-    }
     // console.log('settings new: ', newSettings)
     SettingUpdate(JSON.stringify(params)).then((response) => {
       const res = JSON.parse(response)
@@ -232,6 +239,7 @@ export const SettingsPage = () => {
             name={key}
             type="radio"
             value={item.value}
+            id={item.id}
           />
         )
       })
@@ -247,7 +255,8 @@ export const SettingsPage = () => {
       )
     } else if (setting.type === 'INPUT_TEXT') {
       const key = setting.key
-      const disabled = settings.proxyType.value !== 'CUSTOM' && setting.key == 'proxyAddress'
+      const disabled =
+        settings.proxyType.value !== 'CUSTOM' && setting.key == 'proxyAddress'
       return (
         <Form.Group key={key} as={Row} className="mb-3" controlId={key}>
           <Form.Label column md="2">

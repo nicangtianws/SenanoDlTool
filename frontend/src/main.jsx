@@ -18,10 +18,12 @@ export const settingsAtom = atom({
     value: 'LIGHT',
     options: [
       {
+        id: 'light',
         label: 'LIGHT',
         value: 'LIGHT',
       },
       {
+        id: 'dark',
         label: 'DARK',
         value: 'DARK',
       },
@@ -48,14 +50,17 @@ export const settingsAtom = atom({
     type: 'INPUT_RADIO',
     options: [
       {
+        id: 'no-proxy',
         label: 'No Proxy',
         value: 'NO_PROXY',
       },
       {
+        id: 'follow-system',
         label: 'Follow System',
         value: 'FOLLOW_SYSTEM',
       },
       {
+        id: 'custom',
         label: 'Custom',
         value: 'CUSTOM',
       },
@@ -80,6 +85,9 @@ export const settingsAtom = atom({
     value: '',
     type: 'INPUT_TEXT',
     placeholder: 'Please input user agent!',
+    rules: {
+      maxLength: { value: 500, message: 'Too long!' },
+    },
     options: [],
   },
 })
