@@ -97,7 +97,6 @@ function HomePage() {
   const onSubmit = async (data) => {
     const url = data.url
     if (!parsedUrl) {
-      setLoading(true)
       ParseUrl(url)
         .then((response) => {
           const res = JSON.parse(response)
@@ -122,6 +121,7 @@ function HomePage() {
     // console.log('e', e.target)
     // const data = {...formData}
     // console.log('form data: ', data)
+    setLoading(true)
     Save(JSON.stringify(data))
       .then((response) => {
         const res = JSON.parse(response)
