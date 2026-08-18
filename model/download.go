@@ -144,12 +144,12 @@ func DownloadFileByParts(task *DownloadTask) {
 		ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"
 	}
 	// 多线程控制参数
-	sem := make(chan struct{}, 4) // 并发控制，空结构类型不占用空间
-	totalCount := dlFile.PartNum  // 统计总数
-	var wg sync.WaitGroup         // 进度控制
-	var successCount atomic.Int32 // 多线程计数，使用原子化操作
-	var lastPercent int32 = -1    // 下载完成比例是否变化
-	var mu sync.Mutex             // 保护 lastPercent
+	sem := make(chan struct{}, dlFile.ThreadNumber) // 并发控制，空结构类型不占用空间
+	totalCount := dlFile.PartNum                    // 统计总数
+	var wg sync.WaitGroup                           // 进度控制
+	var successCount atomic.Int32                   // 多线程计数，使用原子化操作
+	var lastPercent int32 = -1                      // 下载完成比例是否变化
+	var mu sync.Mutex                               // 保护 lastPercent
 
 	file, err := os.OpenFile(dlFile.FullPath, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -324,7 +324,7 @@ func downloadPartFile(file *os.File, dlUrl, ua string, partNum int, start, end i
 	if err != nil {
 		return err
 	}
-	log.Printf("Save file part %d: %d bytes\n", partNum, len(content))
+	// log.Printf("Save file part %d: %d bytes\n", partNum, len(content))
 	return save2file(file, int64(start), content)
 }
 

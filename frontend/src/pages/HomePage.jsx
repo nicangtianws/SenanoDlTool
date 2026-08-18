@@ -72,6 +72,7 @@ function HomePage() {
     formState: { errors },
     reset,
     setValue,
+    trigger,
   } = useForm()
 
   // 详情表单
@@ -95,6 +96,7 @@ function HomePage() {
   }
   const handleShow = () => setShow(true)
   const onSubmit = async (data) => {
+    setLoading(true)
     const url = data.url
     if (!parsedUrl) {
       ParseUrl(url)
@@ -106,10 +108,9 @@ function HomePage() {
           }
           // console.log('parsed url data: ', res)
           const data = res.data
-          setValue('name', data.fileName)
-          setValue('url', data.finalUrl)
-          setValue('sourceUrl', data.sourceUrl)
-          setValue('saveDir', data.saveDir)
+          Object.keys(data).map(key => {
+            setValue(key, data[key])
+          })
           setParsedUrl(true)
         })
         .finally(() => {
@@ -121,7 +122,9 @@ function HomePage() {
     // console.log('e', e.target)
     // const data = {...formData}
     // console.log('form data: ', data)
-    setLoading(true)
+    if (!data.threadNumber) {
+      data.threadNumber = 0
+    }
     Save(JSON.stringify(data))
       .then((response) => {
         const res = JSON.parse(response)
@@ -301,7 +304,7 @@ function HomePage() {
       }
       return (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 30px' }}>
-          <ProgressBar animated now={progress} label={`${progress}%`}/>
+          <ProgressBar animated now={progress} label={`${progress}%`} />
           <OptIconSpan>
             <StopFill
               onClick={() => {
@@ -644,21 +647,64 @@ function HomePage() {
               />
             </Form.Group>
             <Form.Group
+              className="mb-3"
               style={{
                 display: parsedUrl ? 'inline' : 'none',
               }}
             >
               <Form.Label>Save Dir</Form.Label>
-              <Form.Control
-                {...register('saveDir')}
-                name="saveDir"
-                type="text"
-                placeholder="Please choose a folder"
-                readOnly
-              />
-              <Button variant="primary" onClick={handleFolderSelect}>
-                Folder select
-              </Button>
+              <Row>
+                <Col md="10">
+                  <Form.Control
+                    {...register('saveDir')}
+                    name="saveDir"
+                    type="text"
+                    placeholder="Please choose a folder"
+                    readOnly
+                  />
+                </Col>
+                <Col md="2">
+                  <Button variant="primary" onClick={handleFolderSelect}>
+                    Select
+                  </Button>
+                </Col>
+              </Row>
+            </Form.Group>
+            <Form.Group
+              className="mb-3"
+              controlId={'form.threadNumber'}
+              style={{
+                display: parsedUrl ? 'inline' : 'none',
+              }}
+            >
+              <Form.Label>Thread Number</Form.Label>
+              <Row>
+                <Col md="4">
+                  <Form.Control
+                    type="number"
+                    name="threadNumber"
+                    {...register('threadNumber', {
+                      valueAsNumber: true,
+                      min: { value: 1, message: 'Invalid!' },
+                      max: { value: 128, message: '128 max!' },
+                      onBlur: (e) => {
+                        trigger('threadNumber')
+                        if (e.target.value < 1) {
+                          setValue('threadNumber', 1)
+                        } else if (e.target.value > 128) {
+                          setValue('threadNumber', 128)
+                        }
+                      },
+                    })}
+                    isInvalid={!!errors['threadNumber']}
+                  />
+                  {errors['threadNumber'] && (
+                    <Form.Control.Feedback type="invalid">
+                      {errors['threadNumber'].message}
+                    </Form.Control.Feedback>
+                  )}
+                </Col>
+              </Row>
             </Form.Group>
           </Form>
         </Modal.Body>

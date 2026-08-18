@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -155,6 +156,7 @@ func (a *App) ParseUrl(params string) string {
 	if err != nil {
 		return ResultError("Parse url failed!")
 	}
+	// 读取全局设置文件夹
 	downloadDir := model.SettingValue("saveDir")
 	if strings.TrimSpace(downloadDir) == "" {
 		downloadDir, err = util.GetDownloadDir()
@@ -162,11 +164,18 @@ func (a *App) ParseUrl(params string) string {
 			downloadDir = ""
 		}
 	}
+	// 读取全局设置线程
+	threadNumber := model.SettingValue("threadNumber")
+	tn, err := strconv.Atoi(threadNumber)
+	if err != nil || tn < 1 {
+		tn = 4
+	}
 	data := map[string]string{
-		"fileName":  name,
-		"finalUrl":  finalUrl,
-		"sourceUrl": url,
-		"saveDir":   downloadDir, // 默认保存目录为Download目录
+		"name":         name,
+		"finalUrl":     finalUrl,
+		"sourceUrl":    url,
+		"saveDir":      downloadDir, // 默认保存目录为Download目录
+		"threadNumber": strconv.Itoa(tn),
 	}
 	return ResultData(data)
 }

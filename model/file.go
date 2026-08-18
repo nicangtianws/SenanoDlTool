@@ -28,7 +28,7 @@ type DlFile struct {
 	StatusMsg     string `json:"statusMsg"`     // 状态信息
 	FileSize      int64  `json:"fileSize"`      // 大小
 	FileSizeHuman string `json:"fileSizeHuman"` // 格式化显示大小
-	ThreadNum     int    `json:"threadNum"`     // 线程数
+	ThreadNumber  int    `json:"threadNumber"`  // 线程数
 	PartNum       int    `json:"partNum"`       // 分块数
 }
 
@@ -53,10 +53,13 @@ func Save(fileInfo *DlFile, ctx context.Context) error {
 		fileInfo.FileStatus = 1
 		fileInfo.DlStatus = 0
 		fileInfo.FullPath = filePath
-		// if fileInfo.ThreadNum > 128 {
-		// 	fileInfo.ThreadNum = 128
-		// }
-		fileInfo.ThreadNum = 4
+		if fileInfo.ThreadNumber > 128 {
+			fileInfo.ThreadNumber = 128
+		}
+		if fileInfo.ThreadNumber < 1 {
+			fileInfo.ThreadNumber = 4
+		}
+
 		// 获取文件大小
 		res, err := http.Head(fileInfo.Url)
 		if err != nil {

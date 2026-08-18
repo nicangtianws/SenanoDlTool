@@ -196,7 +196,7 @@ export const SettingsPage = () => {
             {setting.label}
           </Form.Label>
           <Col md="4">
-            <FormControl
+            <Form.Control
               type="number"
               name={key}
               {...register(key, {
