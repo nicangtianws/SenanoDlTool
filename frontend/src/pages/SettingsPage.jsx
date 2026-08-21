@@ -231,6 +231,9 @@ export const SettingsPage = () => {
             key={item.value}
             {...register(key, {
               onChange: () => {
+                if (setting.key === 'proxyType' && item.value === 'CUSTOM') {
+                  setValue('proxyAddress', settings.proxyAddress.defaultValue)
+                }
                 handleSubmit(onSubmit)()
               },
             })}

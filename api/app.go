@@ -137,7 +137,7 @@ func (a *App) Delete(params string) string {
 	if err != nil {
 		return ResultMsg("Wrong params!")
 	}
-	log.Printf("params: %s", params)
+	// log.Printf("params: %s", params)
 	err = model.Delete(&deleteVo)
 	if err != nil {
 		return ResultError("Delete Failed!")
@@ -227,7 +227,7 @@ func (a *App) LoadSettings(params string) string {
 // SettingUpdate 更新设置
 func (a *App) SettingUpdate(params string) string {
 	var settings []model.Setting
-	log.Printf("settings param: %s", params)
+	// log.Printf("settings param: %s", params)
 	err := json.Unmarshal([]byte(params), &settings)
 	if err != nil {
 		log.Printf("%s", err.Error())

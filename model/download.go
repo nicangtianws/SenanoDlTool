@@ -135,7 +135,7 @@ func DownloadFileByParts(task *DownloadTask) {
 	cancel := task.cancel
 	progress := task.progress
 
-	log.Printf("Download completed: %d%%", progress*100/dlFile.PartNum)
+	// log.Printf("Download completed: %d%%", progress*100/dlFile.PartNum)
 	dlFile = task.DlFile
 
 	dlUrl := dlFile.Url
@@ -178,7 +178,7 @@ func DownloadFileByParts(task *DownloadTask) {
 
 			select {
 			case <-taskCtx.Done():
-				log.Printf("Canceled download for file: %s, part: %d", dlFile.Name, p.PartNum)
+				// log.Printf("Canceled download for file: %s, part: %d", dlFile.Name, p.PartNum)
 				return
 			default:
 				// 下载分块文件
@@ -193,7 +193,7 @@ func DownloadFileByParts(task *DownloadTask) {
 				} else {
 					// 下载成功
 					p.DlStatus = 1
-					log.Printf("File part status updated: %d - %d download successful", p.Id, p.PartNum)
+					// log.Printf("File part status updated: %d - %d download successful", p.Id, p.PartNum)
 					DB.Save(p).Commit()
 					// 增加成功计数
 					newCount := successCount.Add(1)
