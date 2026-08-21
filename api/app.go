@@ -60,7 +60,7 @@ func (a *App) openDirectoryDialog() {
 		if err != nil {
 			downloadDir, err = os.UserHomeDir()
 			if err != nil {
-				log.Printf("Get home dir error: %s", err.Error())
+				log.Printf("获取用户主目录出错: %s", err.Error())
 				return
 			}
 		}
@@ -87,12 +87,12 @@ func (a *App) Save(params string) string {
 	fileInfo := model.DlFile{}
 	err := json.Unmarshal([]byte(params), &fileInfo)
 	if err != nil {
-		return ResultMsg("Wrong params!")
+		return ResultError("参数错误!")
 	}
 
 	err = model.Save(&fileInfo, a.ctx)
 	if err != nil {
-		return ResultError("Save failed!")
+		return ResultError(fmt.Sprintf("保存失败：%s", err.Error()))
 	}
 
 	return ResultSuccess()
@@ -103,11 +103,11 @@ func (a *App) List(params string) string {
 	fileInfo := model.DlFile{}
 	err := json.Unmarshal([]byte(params), &fileInfo)
 	if err != nil {
-		return ResultMsg("Wrong params!")
+		return ResultError("参数错误!")
 	}
 	dlInfos, err := model.List(&fileInfo)
 	if err != nil {
-		return ResultError("Query Failed!")
+		return ResultError(fmt.Sprintf("查询失败：%s", err.Error()))
 	}
 	return ResultData(dlInfos)
 }
@@ -117,15 +117,15 @@ func (a *App) Get(params string) string {
 	var fileInfo model.DlFile
 	err := json.Unmarshal([]byte(params), &fileInfo)
 	if err != nil {
-		return ResultError("Wrong params!")
+		return ResultError("参数错误!")
 	}
 	id := fileInfo.Id
 	if id == 0 {
-		return ResultError("Wrong params!")
+		return ResultError("参数错误!")
 	}
 	dlInfo, err := model.Get(id)
 	if err != nil {
-		return ResultError("Query Failed!")
+		return ResultError(fmt.Sprintf("查询失败: %s", err.Error()))
 	}
 	return ResultData(dlInfo)
 }
@@ -135,14 +135,14 @@ func (a *App) Delete(params string) string {
 	var deleteVo model.DeleteVo
 	err := json.Unmarshal([]byte(params), &deleteVo)
 	if err != nil {
-		return ResultMsg("Wrong params!")
+		return ResultMsg("参数错误!")
 	}
 	// log.Printf("params: %s", params)
 	err = model.Delete(&deleteVo)
 	if err != nil {
-		return ResultError("Delete Failed!")
+		return ResultError("删除失败！")
 	}
-	return ResultMsg("Delete success!")
+	return ResultMsg("删除成功!")
 }
 
 // ParseUrl 从URL解析文件名和最终下载地址
@@ -150,11 +150,11 @@ func (a *App) ParseUrl(params string) string {
 	url := strings.TrimSpace(params)
 	name, err := util.GetFileNameFromURL(url)
 	if err != nil {
-		return ResultError("Parse url failed!")
+		return ResultError(fmt.Sprintf("解析失败: %s", err.Error()))
 	}
 	finalUrl, err := util.GetFinalURLWithHead(url)
 	if err != nil {
-		return ResultError("Parse url failed!")
+		return ResultError(fmt.Sprintf("解析失败: %s", err.Error()))
 	}
 	// 读取全局设置文件夹
 	downloadDir := model.SettingValue("saveDir")
@@ -185,16 +185,16 @@ func (a *App) Resume(params string) string {
 	var fileInfo model.DlFile
 	err := json.Unmarshal([]byte(params), &fileInfo)
 	if err != nil {
-		return ResultError("Wrong params!")
+		return ResultError("参数错误!")
 	}
 	id := fileInfo.Id
 	if id == 0 {
-		return ResultError("Wrong params!")
+		return ResultError("参数错误!")
 	}
 
 	err = model.Resume(id, a.ctx)
 	if err != nil {
-		return ResultError("Retry Failed!")
+		return ResultError(fmt.Sprintf("下载启动失败: %s", err.Error()))
 	}
 	return ResultSuccess()
 }
@@ -204,16 +204,16 @@ func (a *App) Pause(params string) string {
 	var fileInfo model.DlFile
 	err := json.Unmarshal([]byte(params), &fileInfo)
 	if err != nil {
-		return ResultError("Wrong params!")
+		return ResultError("参数错误!")
 	}
 	id := fileInfo.Id
 	if id == 0 {
-		return ResultError("Wrong params!")
+		return ResultError("参数错误!")
 	}
 
 	err = model.Pause(id, a.ctx)
 	if err != nil {
-		return ResultError("Pause Failed!")
+		return ResultError(fmt.Sprintf("下载暂停失败: %s", err.Error()))
 	}
 	return ResultSuccess()
 }
@@ -231,7 +231,7 @@ func (a *App) SettingUpdate(params string) string {
 	err := json.Unmarshal([]byte(params), &settings)
 	if err != nil {
 		log.Printf("%s", err.Error())
-		return ResultError("Wrong params!")
+		return ResultError("参数错误!")
 	}
 	for _, setting := range settings {
 		model.SettingUpdate(&setting)

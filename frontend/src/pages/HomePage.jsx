@@ -103,7 +103,7 @@ function HomePage() {
         .then((response) => {
           const res = JSON.parse(response)
           if (res.code != 200) {
-            error('Parse url failed: ' + res.message)
+            error('解析下载链接失败: ' + res.message)
             return
           }
           // console.log('parsed url data: ', res)
@@ -258,7 +258,7 @@ function HomePage() {
   const handleDeleteDialogOpen = (e) => {
     if (checkedRows.length === 0) {
       // console.log('Select rows is empty!')
-      warning('Select rows is empty!')
+      warning('选择的下载记录为空!')
       return
     }
     setDeleteDialogShow(true)
@@ -276,7 +276,7 @@ function HomePage() {
       setDeleteDialogShow(false)
       handleRefresh()
       checkAllRef.current.checked = false
-      info('Deleted!')
+      info('已删除!')
     })
   }
   const handleDeleteWithFile = (e) => {
@@ -291,7 +291,7 @@ function HomePage() {
         setDeleteDialogShow(false)
         handleRefresh()
         checkAllRef.current.checked = false
-        info('Deleted!')
+        info('已删除!')
       },
     )
   }
@@ -316,7 +316,7 @@ function HomePage() {
                     return
                   }
                   handleRefresh()
-                  info('Pause Success!')
+                  info('已暂停！')
                 })
               }}
             />
@@ -337,7 +337,7 @@ function HomePage() {
                   return
                 }
                 handleRefresh()
-                info('Resume Success!')
+                info('已继续！')
               })
             }}
           />
@@ -359,7 +359,7 @@ function HomePage() {
                   return
                 }
                 handleRefresh()
-                info('ReTry Success!')
+                info('已重试！')
               })
             }}
           />
@@ -459,10 +459,10 @@ function HomePage() {
                       setShow(true)
                     }}
                   >
-                    New
+                    新增
                   </Button>
                   <Button variant="danger" onClick={handleDeleteDialogOpen}>
-                    Delete
+                    删除
                   </Button>
                 </ToolBoxDiv>
               </div>
@@ -504,11 +504,11 @@ function HomePage() {
                     />
                   </th>
                   <th>#</th>
-                  <th>Name</th>
-                  <th>Url</th>
-                  <th>Save Dir</th>
-                  <th>DlStatus</th>
-                  <th>Size</th>
+                  <th>文件名</th>
+                  <th>链接</th>
+                  <th>保存路径</th>
+                  <th>下载状态</th>
+                  <th>大小</th>
                 </tr>
               </thead>
               <tbody>{dlTableTrs}</tbody>
@@ -526,12 +526,12 @@ function HomePage() {
       {/** 详情弹窗 */}
       <Modal show={detailDialogShow} onHide={handleDetailDialogClose}>
         <Modal.Header closeButton>
-          <Modal.Title>Detail</Modal.Title>
+          <Modal.Title>详情</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
             <Form.Group className="mb-3" controlId="currentRow.name">
-              <Form.Label>Name</Form.Label>
+              <Form.Label>名称</Form.Label>
               <Form.Control
                 name="name"
                 type="text"
@@ -541,7 +541,7 @@ function HomePage() {
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="currentRow.saveDir">
-              <Form.Label>Save dir</Form.Label>
+              <Form.Label>保存路径</Form.Label>
               <Form.Control
                 name="saveDir"
                 type="text"
@@ -551,7 +551,7 @@ function HomePage() {
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="currentRow.fullPath">
-              <Form.Label>Full path</Form.Label>
+              <Form.Label>全路径</Form.Label>
               <Form.Control
                 name="fullPath"
                 type="text"
@@ -561,7 +561,7 @@ function HomePage() {
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="currentRow.sourceUrl">
-              <Form.Label>Source url</Form.Label>
+              <Form.Label>来源链接</Form.Label>
               <Form.Control
                 name="sourceUrl"
                 type="text"
@@ -571,7 +571,7 @@ function HomePage() {
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="currentRow.url">
-              <Form.Label>Url</Form.Label>
+              <Form.Label>下载链接</Form.Label>
               <Form.Control
                 name="url"
                 type="text"
@@ -584,7 +584,7 @@ function HomePage() {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleDetailDialogClose}>
-            Close
+            关闭
           </Button>
         </Modal.Footer>
       </Modal>
@@ -592,18 +592,18 @@ function HomePage() {
       {/** 删除弹窗 */}
       <Modal show={deleteDialogShow} onHide={handleDeleteDialogClose}>
         <Modal.Header closeButton>
-          <Modal.Title>Are you ok?</Modal.Title>
+          <Modal.Title>是否确认删除？</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Please ensure delete checked rows!</Modal.Body>
+        <Modal.Body>请选择要删除的下载记录！</Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleDeleteDialogClose}>
-            Close
+            关闭
           </Button>
           <Button variant="primary" onClick={handleDelete}>
-            Delete
+            删除
           </Button>
           <Button variant="danger" onClick={handleDeleteWithFile}>
-            Delete with file
+            删除并清理文件
           </Button>
         </Modal.Footer>
       </Modal>
@@ -611,23 +611,23 @@ function HomePage() {
       {/** 新增弹窗 */}
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>Create</Modal.Title>
+          <Modal.Title>创建下载</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form ref={formRef} id="form" onSubmit={handleSubmit(onSubmit)}>
             <Form.Group className="mb-3" controlId="form.urlInput">
-              <Form.Label>Url</Form.Label>
+              <Form.Label>下载链接</Form.Label>
               <Form.Control
-                {...register('url', { required: 'Url is required' })}
+                {...register('url', { required: '下载链接不能为空！' })}
                 name="url"
                 type="text"
-                placeholder="Please input url"
+                placeholder="请输入下载链接！"
               />
               <Form.Control
                 {...register('sourceUrl')}
                 name="sourceUrl"
                 type="text"
-                placeholder="Please input url"
+                placeholder="请输入下载链接！"
                 style={{ display: 'none' }}
               />
             </Form.Group>
@@ -638,12 +638,12 @@ function HomePage() {
                 display: parsedUrl ? 'inline' : 'none',
               }}
             >
-              <Form.Label>Name</Form.Label>
+              <Form.Label>名称</Form.Label>
               <Form.Control
                 {...register('name')}
                 name="name"
                 type="text"
-                placeholder="Please input filename"
+                placeholder="请输入文件名"
               />
             </Form.Group>
             <Form.Group
@@ -652,20 +652,20 @@ function HomePage() {
                 display: parsedUrl ? 'inline' : 'none',
               }}
             >
-              <Form.Label>Save Dir</Form.Label>
+              <Form.Label>保存路径</Form.Label>
               <Row>
-                <Col md="10">
+                <Col md="9">
                   <Form.Control
                     {...register('saveDir')}
                     name="saveDir"
                     type="text"
-                    placeholder="Please choose a folder"
+                    placeholder="请选择文件夹！"
                     readOnly
                   />
                 </Col>
-                <Col md="2">
+                <Col md="3">
                   <Button variant="primary" onClick={handleFolderSelect}>
-                    Select
+                    选择
                   </Button>
                 </Col>
               </Row>
@@ -677,7 +677,7 @@ function HomePage() {
                 display: parsedUrl ? 'inline' : 'none',
               }}
             >
-              <Form.Label>Thread Number</Form.Label>
+              <Form.Label>线程数</Form.Label>
               <Row>
                 <Col md="4">
                   <Form.Control
@@ -685,8 +685,8 @@ function HomePage() {
                     name="threadNumber"
                     {...register('threadNumber', {
                       valueAsNumber: true,
-                      min: { value: 1, message: 'Invalid!' },
-                      max: { value: 128, message: '128 max!' },
+                      min: { value: 1, message: '无效线程数！' },
+                      max: { value: 128, message: '最大128线程数！' },
                       onBlur: (e) => {
                         trigger('threadNumber')
                         if (e.target.value < 1) {
@@ -710,7 +710,7 @@ function HomePage() {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>
-            Close
+            关闭
           </Button>
           <Button
             variant="primary"
@@ -720,7 +720,7 @@ function HomePage() {
               display: !loading ? 'inline' : 'none',
             }}
           >
-            {parsedUrl ? 'Start' : 'Parse'}
+            {parsedUrl ? '开始' : '解析'}
           </Button>
           <Button
             variant="primary"
@@ -736,7 +736,7 @@ function HomePage() {
               role="status"
               aria-hidden="true"
             />
-            Loading...
+            加载中...
           </Button>
         </Modal.Footer>
       </Modal>
