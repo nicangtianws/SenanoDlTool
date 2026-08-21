@@ -12,66 +12,67 @@ import { MessageProvider, messageStyles } from './hooks/UseMessage'
 // 设置 全局状态
 export const settingsAtom = atom({
   theme: {
-    label: 'Theme',
+    label: '主题',
     key: 'theme',
     type: 'SELECT',
     value: 'LIGHT',
     options: [
       {
         id: 'light',
-        label: 'LIGHT',
+        label: '明亮',
         value: 'LIGHT',
       },
       {
         id: 'dark',
-        label: 'DARK',
+        label: '黑暗',
         value: 'DARK',
       },
     ],
   },
   saveDir: {
-    label: 'Save Dir',
+    label: '保存路径',
     key: 'saveDir',
     value: '',
     type: 'DIRECTORY_SELECTOR',
+    placeholder: '请选择文件夹！',
     options: [],
   },
   threadNumber: {
-    label: 'Thread Number',
+    label: '线程数',
     key: 'threadNumber',
     value: 4,
     type: 'INPUT_NUMBER',
     options: [],
   },
   proxyType: {
-    label: 'Proxy Type',
+    label: '代理方式',
     key: 'proxyType',
     value: 'NO_PROXY',
     type: 'INPUT_RADIO',
     options: [
       {
         id: 'no-proxy',
-        label: 'No Proxy',
+        label: '无',
         value: 'NO_PROXY',
       },
       {
         id: 'follow-system',
-        label: 'Follow System',
+        label: '跟随系统',
         value: 'FOLLOW_SYSTEM',
       },
       {
         id: 'custom',
-        label: 'Custom',
+        label: '自定义',
         value: 'CUSTOM',
       },
     ],
   },
   proxyAddress: {
-    label: 'Proxy Address',
+    label: '代理地址',
     key: 'proxyAddress',
     value: '',
     type: 'INPUT_TEXT',
-    placeholder: 'Please input proxy address!',
+    placeholder: '请输入代理地址!',
     rules: {
       minLength: { value: 9, message: 'Too short!' },
       maxLength: { value: 21, message: 'Too long!' },
@@ -80,11 +81,11 @@ export const settingsAtom = atom({
     options: [],
   },
   userAgent: {
-    label: 'User Agent',
+    label: '自定义UA',
     key: 'userAgent',
     value: '',
     type: 'INPUT_TEXT',
-    placeholder: 'Please input user agent!',
+    placeholder: '请输入User agent!',
     rules: {
       maxLength: { value: 500, message: 'Too long!' },
     },

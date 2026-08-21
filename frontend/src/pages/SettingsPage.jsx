@@ -148,8 +148,8 @@ export const SettingsPage = () => {
           </Form.Label>
           <Col md="4">
             <Form.Select
-              name="theme"
-              {...register('theme', {
+              name={setting.key}
+              {...register(setting.key, {
                 onChange: () => {
                   handleSubmit(onSubmit)()
                 },
@@ -177,13 +177,13 @@ export const SettingsPage = () => {
               {...register('saveDir')}
               name="saveDir"
               type="text"
-              placeholder="Please choose a folder"
+              placeholder={setting.placeholder || ''}
               readOnly
             />
           </Col>
           <Col md="2">
             <Button variant="primary" onClick={setting.action}>
-              Folder select
+              选择
             </Button>
           </Col>
         </Form.Group>
@@ -201,8 +201,8 @@ export const SettingsPage = () => {
               name={key}
               {...register(key, {
                 valueAsNumber: true,
-                min: { value: 1, message: 'Invalid!' },
-                max: { value: 128, message: '128 max!' },
+                min: { value: 1, message: '无效线程数！' },
+                max: { value: 128, message: '最多支持128线程！' },
                 onBlur: (e) => {
                   trigger(key)
                   if (e.target.value < 1) {
