@@ -622,6 +622,7 @@ function HomePage() {
                 name="url"
                 type="text"
                 placeholder="请输入下载链接！"
+                disabled={parsedUrl}
               />
               <Form.Control
                 {...register('sourceUrl')}
