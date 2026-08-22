@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"path"
@@ -9,9 +10,13 @@ import (
 	"time"
 )
 
-func GetFinalURLWithHead(initialURL string) (string, error) {
+func GetFinalURLWithHead(initialURL string, proxyType int, proxyAddress string) (string, error) {
 	// 使用 http.Head 方法
-	resp, err := http.Head(initialURL)
+	client, err := GenerateClient(proxyType, proxyAddress, 10)
+	if err != nil {
+		return "", fmt.Errorf("创建请求失败: %w", err)
+	}
+	resp, err := client.Head(initialURL)
 	if err != nil {
 		return "", err
 	}
@@ -19,6 +24,54 @@ func GetFinalURLWithHead(initialURL string) (string, error) {
 
 	finalURL := resp.Request.URL.String()
 	return finalURL, nil
+}
+
+func GenerateClient(proxyType int, proxyAddress string, timeout int) (*http.Client, error) {
+	var client *http.Client
+	var err error
+	// 使用系统代理
+	switch proxyType {
+	case 1:
+		client = &http.Client{
+			Transport: &http.Transport{
+				Proxy: http.ProxyFromEnvironment,
+			},
+			Timeout: time.Duration(timeout) * time.Second,
+		}
+	case 2:
+		// 自定义代理地址
+		if strings.TrimSpace(proxyAddress) != "" {
+			// 创建代理
+			proxy, err := url.Parse(proxyAddress)
+			if err != nil {
+				log.Printf("错误的代理地址: %s", proxyAddress)
+				return nil, err
+			}
+			client = &http.Client{
+				Transport: &http.Transport{
+					Proxy: http.ProxyURL(proxy),
+				},
+			}
+		} else {
+			return nil, fmt.Errorf("错误的代理地址: %s", proxyAddress)
+		}
+	default:
+		// 使用默认请求客户端
+		client = http.DefaultClient
+	}
+
+	return client, err
+}
+
+func GetFileName(rawURL string, proxyType int, proxyAddress string) (string, error) {
+	name, err := GetFileNameFromHeader(rawURL, proxyType, proxyAddress)
+	if strings.TrimSpace(name) == "" {
+		name, err = GetFileNameFromURL(rawURL)
+		if err != nil {
+			return "", err
+		}
+	}
+	return name, nil
 }
 
 // GetFileNameFromURL 从 URL 中提取文件名。
@@ -52,10 +105,10 @@ func GetFileNameFromURL(rawURL string) (string, error) {
 
 // GetFileNameFromHeader 通过 HEAD 请求从 Content-Disposition 响应头获取文件名。
 // 若获取失败或头不存在，则回退到 GetFileNameFromURL。
-func GetFileNameFromHeader(rawURL string) (string, error) {
-	client := &http.Client{
-		Timeout: 10 * time.Second, // 建议设置超时
-		// 默认自动跟随重定向（最多 10 次）
+func GetFileNameFromHeader(rawURL string, proxyType int, proxyAddress string) (string, error) {
+	client, err := GenerateClient(proxyType, proxyAddress, 10)
+	if err != nil {
+		return "", fmt.Errorf("创建请求失败: %w", err)
 	}
 
 	resp, err := client.Head(rawURL)

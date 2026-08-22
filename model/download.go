@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -14,6 +13,7 @@ import (
 	"sync/atomic"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"himenosena.top/util"
 )
 
 type EventData struct {
@@ -253,42 +253,6 @@ func DownloadFileByParts(task *DownloadTask) {
 	}
 }
 
-func generateClient(proxyType int, proxyAddress string) (*http.Client, error) {
-	var client *http.Client
-	var err error
-	// 使用系统代理
-	switch proxyType {
-	case 1:
-		client = &http.Client{
-			Transport: &http.Transport{
-				Proxy: http.ProxyFromEnvironment,
-			},
-		}
-	case 2:
-		// 自定义代理地址
-		if strings.TrimSpace(proxyAddress) != "" {
-			// 创建代理
-			proxy, err := url.Parse(proxyAddress)
-			if err != nil {
-				log.Printf("错误的代理地址: %s", proxyAddress)
-				return nil, err
-			}
-			client = &http.Client{
-				Transport: &http.Transport{
-					Proxy: http.ProxyURL(proxy),
-				},
-			}
-		} else {
-			return nil, fmt.Errorf("错误的代理地址: %s", proxyAddress)
-		}
-	default:
-		// 使用默认请求客户端
-		client = http.DefaultClient
-	}
-
-	return client, err
-}
-
 // 下载文件块
 func downloadPartFile(file *os.File, dlUrl, ua string, partNum int, start, end int64, ctx context.Context) error {
 	// 初始化客户端
@@ -299,8 +263,10 @@ func downloadPartFile(file *os.File, dlUrl, ua string, partNum int, start, end i
 		intProxyType = 0
 	}
 	proxyAddress := SettingValue("proxyAddress")
-	client, err = generateClient(intProxyType, proxyAddress)
-
+	client, err = util.GenerateClient(intProxyType, proxyAddress, 0)
+	if err != nil {
+		return err
+	}
 	// 创建请求
 	req, err := http.NewRequestWithContext(ctx, "GET", dlUrl, nil)
 	if err != nil {

@@ -148,11 +148,17 @@ func (a *App) Delete(params string) string {
 // ParseUrl 从URL解析文件名和最终下载地址
 func (a *App) ParseUrl(params string) string {
 	url := strings.TrimSpace(params)
-	name, err := util.GetFileNameFromURL(url)
+	proxyTypeStr := model.SettingValue("proxyType")
+	proxyType, err := strconv.Atoi(proxyTypeStr)
+	proxyAddress := ""
+	if proxyType == 2 {
+		proxyAddress = model.SettingValue("proxyAddress")
+	}
+	name, err := util.GetFileName(url, proxyType, proxyAddress)
 	if err != nil {
 		return ResultError(fmt.Sprintf("解析失败: %s", err.Error()))
 	}
-	finalUrl, err := util.GetFinalURLWithHead(url)
+	finalUrl, err := util.GetFinalURLWithHead(url, proxyType, proxyAddress)
 	if err != nil {
 		return ResultError(fmt.Sprintf("解析失败: %s", err.Error()))
 	}
